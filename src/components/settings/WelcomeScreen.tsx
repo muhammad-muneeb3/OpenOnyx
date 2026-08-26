@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
-import { FolderOpen, Plus, Network } from "lucide-react";
+import { FolderOpen, Plus, X } from "lucide-react";
 import { Theme } from "../../types";
 import { isDarkTheme } from "../../utils/helpers";
 import type { AppSettings } from "./SettingsPage";
@@ -16,6 +16,9 @@ export type VaultEntryTransitionPhase = "idle" | "transitioning" | "entered";
 
 interface WelcomeScreenProps {
   onOpenVault: (action: VaultEntryAction) => void;
+  previouslyOpenedVaults?: string[];
+  onOpenRecentVault?: (path: string) => Promise<boolean>;
+  onRemoveRecentVault?: (path: string) => Promise<void>;
   transitionPhase?: VaultEntryTransitionPhase;
   theme?: Theme;
   settings?: AppSettings;
@@ -23,6 +26,9 @@ interface WelcomeScreenProps {
 
 export function WelcomeScreen({
   onOpenVault,
+  previouslyOpenedVaults = [],
+  onOpenRecentVault,
+  onRemoveRecentVault,
   transitionPhase = "idle",
   theme = "dark",
   settings,
@@ -41,6 +47,10 @@ export function WelcomeScreen({
   }, []);
 
   const actionsDisabled = transitionPhase !== "idle";
+  const recentVaults = Array.from(new Set(previouslyOpenedVaults)).filter(Boolean);
+
+  const vaultName = (path: string) =>
+    path.split(/[/\\]/).filter(Boolean).pop() || path;
 
   const handleAction = (action: VaultEntryAction) => {
     if (actionsDisabled) return;
@@ -87,6 +97,50 @@ export function WelcomeScreen({
           <Plus size={18} strokeWidth={2} /> Create Vault
         </button>
       </div>
+      {recentVaults.length > 0 && onOpenRecentVault ? (
+        <section className="mt-8 w-full max-w-[440px]" aria-labelledby="recent-vaults-heading">
+          <h2
+            id="recent-vaults-heading"
+            className="mb-2 text-xs font-semibold uppercase tracking-wide text-(--text-muted)"
+          >
+            Recent vaults
+          </h2>
+          <div className="overflow-hidden rounded-lg border border-(--border-subtle) bg-(--bg-secondary)">
+            {recentVaults.map((path) => (
+              <div
+                key={path}
+                className="group flex items-center gap-3 border-b border-(--border-subtle) px-3 py-2.5 last:border-b-0 hover:bg-(--bg-hover)"
+              >
+                <button
+                  type="button"
+                  className="min-w-0 flex-1 cursor-pointer border-0 bg-transparent text-left disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={actionsDisabled}
+                  onClick={() => void onOpenRecentVault(path)}
+                  title={path}
+                >
+                  <span className="block overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-(--text-primary)">
+                    {vaultName(path)}
+                  </span>
+                  <span className="block overflow-hidden text-ellipsis whitespace-nowrap text-xs text-(--text-muted)">
+                    {path}
+                  </span>
+                </button>
+                {onRemoveRecentVault ? (
+                  <button
+                    type="button"
+                    className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-(--text-muted) opacity-70 hover:bg-(--bg-active) hover:text-(--text-primary)"
+                    onClick={() => void onRemoveRecentVault(path)}
+                    aria-label={`Remove ${vaultName(path)} from recent vaults`}
+                    title="Remove from list"
+                  >
+                    <X size={15} />
+                  </button>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

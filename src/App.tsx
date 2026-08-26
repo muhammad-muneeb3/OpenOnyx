@@ -5247,6 +5247,9 @@ export default function App() {
               <div className="vault-entry-layer vault-entry-layer-welcome">
                 <WelcomeScreen
                   onOpenVault={handleWelcomeVaultAction}
+                  previouslyOpenedVaults={previouslyOpenedVaults}
+                  onOpenRecentVault={handleSwitchVault}
+                  onRemoveRecentVault={handleRemoveVaultFromList}
                   transitionPhase={vaultEntryTransitionPhase}
                   theme={theme}
                   settings={settings}
@@ -5262,6 +5265,9 @@ export default function App() {
           ) : !vaultPath ? (
             <WelcomeScreen
               onOpenVault={handleWelcomeVaultAction}
+              previouslyOpenedVaults={previouslyOpenedVaults}
+              onOpenRecentVault={handleSwitchVault}
+              onRemoveRecentVault={handleRemoveVaultFromList}
               transitionPhase="idle"
               theme={theme}
               settings={settings}

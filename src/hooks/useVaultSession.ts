@@ -177,10 +177,14 @@ export function useVaultSession({
       return true;
     } catch (e) {
       console.error("Failed to switch vault:", e);
-      alert("Failed to switch vault. It may be too large or inaccessible.");
+      if (vaultPath !== path) {
+        setVaultPath(vaultPath);
+        await api.setVaultPath(vaultPath || "");
+      }
+      showToast("Could not open that vault. It may have been moved or deleted.", "error");
       return false;
     }
-  }, [loadVaultData]);
+  }, [loadVaultData, setVaultPath, showToast, vaultPath]);
 
   const handleWelcomeVaultAction = useCallback(
     async (action: VaultEntryAction) => {
